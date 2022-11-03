@@ -29,22 +29,23 @@ const addContact = async (body) => {
   const { name, email, phone } = body;
   const contactsList = await listContacts();
   const id = uuidv4();
-  const contact = { id, name, email, phone };
-  contactsList.push(contact);
+  const newContact = { id, name, email, phone };
+  contactsList.push(newContact);
   await fs.writeFile(contactsPath, JSON.stringify(contactsList));
-  return contact;
+  return newContact;
 };
 
 const updateContact = async (contactId, body) => {
-  const contacts = await listContacts();
-  contacts[contacts.findIndex((contact) => contact.id === contactId)] = {
+  const contactsList = await listContacts()
+  const findedContact = contactsList.find(contact => contact.id === contactId)
+  const reassignedContact = Object.assign(findedContact, {
     id: contactId,
     name: body.name,
     email: body.email,
     phone: body.phone,
-  };
-  await fs.writeFile(contactsPath, JSON.stringify(contacts));
-  return contacts;
+  })
+  await fs.writeFile(contactsPath, JSON.stringify(contactsList));
+  return reassignedContact;
 };
 
 module.exports = {
