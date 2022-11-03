@@ -27,7 +27,7 @@ router.get("/", async (req, res, next) => {
       contacts
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -44,7 +44,7 @@ router.get("/:contactId", async (req, res, next) => {
       contact
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -62,7 +62,7 @@ router.post("/", async (req, res, next) => {
       createdContact
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -77,7 +77,7 @@ router.delete("/:contactId", async (req, res, next) => {
       message: "Contact deleted",
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
@@ -101,7 +101,7 @@ router.put("/:contactId", async (req, res, next) => {
       changedContact
     });
   } catch (error) {
-    res.status(500).json({ error: error.message });
+    res.status(500).json({ message: error.message });
   }
 });
 
