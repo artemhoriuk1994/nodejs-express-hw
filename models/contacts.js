@@ -38,6 +38,9 @@ const addContact = async (body) => {
 const updateContact = async (contactId, body) => {
   const contactsList = await listContacts()
   const findedContact = contactsList.find(contact => contact.id === contactId)
+  if (!findedContact) {
+    throw new Error("Not Found")
+  }
   const reassignedContact = Object.assign(findedContact, {
     id: contactId,
     name: body.name,
