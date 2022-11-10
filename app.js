@@ -1,7 +1,7 @@
 const express = require("express");
 const logger = require("morgan");
 const cors = require("cors");
-
+require('dotenv').config()
 const contactsRouter = require("./routes/api/contacts");
 
 const app = express();
@@ -19,7 +19,18 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
+  if (err.name === "ValidationError") {
+    return res.status(400).json({
+      message: "Bad Request"
+    })
+  }
+  if (err.status) {
+    return res.status(err.status).json({
+      message: err.message
+    })
+  }
   res.status(500).json({ message: err.message });
+  process.exit(1)
 });
 
 module.exports = app;
