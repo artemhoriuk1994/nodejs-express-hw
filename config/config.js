@@ -1,12 +1,9 @@
 require("dotenv").config();
-const mongoose = require("mongoose");
-const  HOST_DB  = process.env.HOST_DB;
-const PORT = process.env.PORT || 3000
 
-const connectMongo = async () => {
-  return mongoose.connect(HOST_DB);
-};
-module.exports = {
-    connectMongo,
-    PORT
+const config = {
+HOST_DB: process.env.HOST_DB,
+PORT: +process.env.PORT || 3000 // process.env.PORT return STring and we adding plus to convert String to Number
 }
+
+module.exports = config
+
