@@ -19,9 +19,9 @@ app.use((req, res) => {
 });
 
 app.use((err, req, res, next) => {
-  if (err.name === "ValidationError") {
+  if (err.message.includes('required')) {
     return res.status(400).json({
-      message: "Bad Request"
+      message: err.message
     })
   }
   if (err.status) {
@@ -30,7 +30,6 @@ app.use((err, req, res, next) => {
     })
   }
   res.status(500).json({ message: err.message });
-  process.exit(1)
 });
 
 module.exports = app;
