@@ -57,7 +57,7 @@ const updateStatusContact = async (req, res, next) => {
   const favorite  = req.body
   const updatedStatus = await Contacts.findByIdAndUpdate(contactId, favorite, {new: true})
     if (!updatedStatus) {
-     return next(NotFoundHttpError())
+      return next(NotFoundHttpError())
     }
       return res.status(200).json(updatedStatus); 
 };
