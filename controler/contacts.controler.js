@@ -1,5 +1,5 @@
-const { Contacts } = require('../models/model.contact')
-const { schemePost, schemePatch, schemePut} = require('../middlewares/validations')
+const { Contacts } = require('../models/model.contact');
+const { schemePost, schemePatch, schemePut } = require('../middlewares/validations');
 const {NotFoundHttpError, BadRequestHttp} = require("../helper/helper");
 
 const listContacts = async (req, res, next) =>  {
