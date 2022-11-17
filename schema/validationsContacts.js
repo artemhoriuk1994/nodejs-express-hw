@@ -1,7 +1,7 @@
 const Joi = require("joi");
 
 const schemePost = Joi.object({
-  name: Joi.string().required().min(2).max(30),
+  name: Joi.string().required().max(30),
   phone: Joi.string().required(),
   email: Joi.string().required().email({minDomainSegments: 2, tlds: { allow: ["com", "net"] }}),
 });
@@ -20,6 +20,7 @@ const schemePut = Joi.object({
 const schemePatch = Joi.object({
   favorite: Joi.boolean().required()
 });
+
 
 module.exports = { schemePost, schemePut, schemePatch };
 

@@ -7,9 +7,12 @@ const {
   updateContact,
   updateStatusContact,
 } = require("../../controler/contacts.controler");
-const{tryCatchWrapper} = require("../../helper/helper")
+const{tryCatchWrapper} = require("../../helper/helper");
+const { auth } = require("../../middlewares/auth");
 
 const router = express.Router();
+
+router.use(auth);
 
 router.get("/", tryCatchWrapper(listContacts));
 

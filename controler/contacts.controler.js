@@ -1,15 +1,19 @@
 const { Contacts } = require('../models/model.contact')
-const { schemePost, schemePatch, schemePut} = require('../middlewares/validations')
+const { schemePost, schemePatch, schemePut} = require('../schema/validationsContacts')
 const {NotFoundHttpError, BadRequestHttp} = require("../helper/helper");
 
-const listContacts = async (req, res, next) =>  {
-        const contacts = await Contacts.find()
-        return res.json(contacts)
+const listContacts = async (req, res, next) => {
+  const { user } = req;
+  const { page = 1, limit = 20 } = req.query;
+  const skip = (page - 1) * limit;
+  const contacts = await Contacts.find({user},'',{skip, limit: +limit});
+  return res.json(contacts);
 };
 
 const getContactById = async (req, res, next) => {
-    const { contactId } = req.params
-    const contact = await Contacts.findById(contactId)
+  const { contactId } = req.params
+  const { _id } = req.user;
+  const contact = await Contacts.findById(contactId, _id)
     if (contact) {
         return res.json(contact)
     }
@@ -17,8 +21,9 @@ const getContactById = async (req, res, next) => {
 };
 
 const removeContact = async (req, res, next) => {
-    const { contactId } = req.params
-    const removedContact = await Contacts.findByIdAndDelete(contactId);
+  const { contactId } = req.params
+  const { _id } = req.user;
+  const removedContact = await Contacts.findByIdAndDelete(contactId,  _id );
     if (removedContact) {
         return res.status(200).json(removedContact)
     }
@@ -27,20 +32,24 @@ const removeContact = async (req, res, next) => {
 
 const addContact = async (req, res, next) => {
   const { error } = schemePost.validate(req.body);
-    if (error) {
-      return next(BadRequestHttp(error.message))
+  if (error) {
+    return next(BadRequestHttp(error.message))
   }
-  const newContact = await Contacts.create(req.body)
-    return res.status(201).json(newContact)
+  const { _id } = req.user;
+  const newContact = await Contacts.create({...req.body, owner: _id});
+  return res.status(201).json(newContact)
 };
 
-const updateContact = async (req, res, next) => { 
+const updateContact = async (req, res, next) => {
   const { error } = schemePut.validate(req.body);
- if (error) {
-      return next(BadRequestHttp(error.message))
-  }
   const { contactId } = req.params;
-  const updatedContact = await Contacts.findByIdAndUpdate(contactId, req.body, { new: true })
+  const { _id } = req.user;
+
+  if (error) {
+    return next(BadRequestHttp(error.message))
+  }
+
+  const updatedContact = await Contacts.findByIdAndUpdate( {_id: contactId, owner: _id },req.body,{ new: true })
   
   if (!updatedContact) {
     next(NotFoundHttpError())
@@ -54,8 +63,10 @@ const updateStatusContact = async (req, res, next) => {
     return next(BadRequestHttp(error.message))
   }
   const { contactId } = req.params;
-  const favorite  = req.body
-  const updatedStatus = await Contacts.findByIdAndUpdate(contactId, favorite, {new: true})
+  const favorite = req.body;
+  const { _id } = req.user;
+  const updatedStatus = await Contacts.findByIdAndUpdate({ _id: contactId, owner: _id }, favorite, { new: true })
+  
     if (!updatedStatus) {
       return next(NotFoundHttpError())
     }
