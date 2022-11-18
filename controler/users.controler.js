@@ -1,10 +1,10 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
-const {Conflict, Unauthorized} = require('http-errors')
+const {Conflict, Unauthorized, BadRequest} = require('http-errors')
 const { User } = require('../models/model.user')
 const config = require('../config/config')
-const { BadRequestHttp} = require("../helper/helper");
-const { schemePostRegister, schemeGetLogin } = require('../schema/validationUser');
+const { schemePostRegister, schemeGetLogin, schemePatchSub } = require('../schema/validationUser');
+
 
 const register = async (req, res, next) => {
   const { error } = schemePostRegister.validate(req.body);
@@ -23,9 +23,9 @@ const register = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { error } = schemeGetLogin.validate(req.body);
+  const { error } = await schemeGetLogin.validate(req.body);
   if (error) {
-    return next(BadRequestHttp(error.message))
+    throw new BadRequest(err.message)
   }
   const { email, password } = req.body;
   const user = await User.findOne({ email })
@@ -66,7 +66,23 @@ const logout = async (req, res, next) => {
 };
 
 const setSubcrition = async (req, res, next) => {
+  const { error } =  schemePatchSub.validate(req.body);
   const { _id } = req.user;
+  const { subscription }  = req.body;
+  if (error) {
+   throw new BadRequest(error.message)
+  }
+  const find = await User.findOne(_id);
+  console.log(find.subscription)
+  console.log(subscription)
+  if (subscription === find.subscription) {
+    throw new BadRequest("You have this subscrition alredy");
+  }
+  const newSubscription = await User.findByIdAndUpdate(_id, { subscription }, { new: true });
+  res.status(200).json({
+    email: newSubscription.email,
+    subscription: newSubscription.subscription
+  });
 };
 
 
@@ -74,5 +90,6 @@ module.exports = {
   register, 
   login,
   getCurrent,
-  logout
+  logout,
+  setSubcrition
 };

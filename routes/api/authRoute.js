@@ -1,6 +1,6 @@
 const express = require("express");
 const {
-  register, login, getCurrent, logout
+  register, login, getCurrent, logout, setSubcrition
 } = require("../../controler/users.controler");
 const { auth } = require("../../middlewares/auth");
 const { tryCatchWrapper } = require("../../helper/helper");

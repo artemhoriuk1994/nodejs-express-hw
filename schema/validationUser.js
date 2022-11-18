@@ -11,7 +11,10 @@ const schemeGetLogin = Joi.object({
   password: Joi.string().required()
 });
 
+const schemePatchSub = Joi.object({
+   subscription: Joi.string().required().valid("starter", "pro", "business"),
+})
 
 
-module.exports = { schemePostRegister, schemeGetLogin};
+module.exports = { schemePostRegister, schemeGetLogin, schemePatchSub};
 

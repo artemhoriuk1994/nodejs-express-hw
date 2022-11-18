@@ -21,9 +21,7 @@ const userScheme = new Schema({
   token: String
 }, { versionKey: false });
   
-const subcriptionScheme = new Schema({
-  subscription: []
-})
+
 userScheme.pre('save', async function (next) {
   const user = this;
   if (!user.isModified("password")) next();
@@ -34,5 +32,6 @@ userScheme.pre('save', async function (next) {
 })
 
 const User = model('user', userScheme);
+
 
 module.exports = { User };
