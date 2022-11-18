@@ -23,9 +23,9 @@ const register = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { error } = await schemeGetLogin.validate(req.body);
+  const { error } =  schemeGetLogin.validate(req.body);
   if (error) {
-    throw new BadRequest(err.message)
+    throw new BadRequest(error.message)
   }
   const { email, password } = req.body;
   const user = await User.findOne({ email })
