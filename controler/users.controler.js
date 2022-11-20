@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
-const {Conflict, Unauthorized, BadRequest} = require('http-errors')
+const { Unauthorized, BadRequest} = require('http-errors')
 const { User } = require('../models/model.user')
 const config = require('../config/config')
 const { schemePostRegister, schemeGetLogin, schemePatchSub } = require('../schema/validationUser');
@@ -9,7 +9,7 @@ const { schemePostRegister, schemeGetLogin, schemePatchSub } = require('../schem
 const register = async (req, res, next) => {
   const { error } = schemePostRegister.validate(req.body);
   if (error) {
-     throw new Conflict("Email in use")
+     throw new BadRequest(error.message)
   }
 
   const { email, password } = req.body;
@@ -73,8 +73,7 @@ const setSubcrition = async (req, res, next) => {
    throw new BadRequest(error.message)
   }
   const find = await User.findOne(_id);
-  console.log(find.subscription)
-  console.log(subscription)
+  
   if (subscription === find.subscription) {
     throw new BadRequest("You have this subscrition alredy");
   }

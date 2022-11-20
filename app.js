@@ -26,7 +26,11 @@ app.use((err, req, res, next) => {
       message: err.message
     })
   }
-
+  if (err.message.includes('duplicate key error collection')) {
+    return res.status(409).json({
+         message: "Email in use"
+       })
+  }
   if (err.status) {
     return res.status(err.status).json({
       message: err.message
