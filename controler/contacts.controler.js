@@ -3,11 +3,20 @@ const { schemePost, schemePatch, schemePut} = require('../schema/validationsCont
 const {NotFoundHttpError, BadRequestHttp} = require("../helper/helper");
 
 const listContacts = async (req, res, next) => {
-  const { user } = req;
-  const { page = 1, limit = 20 } = req.query;
+  const { _id } = req.user;
+  const { page = 1, limit = 20, favorite} = req.query;
   const skip = (page - 1) * limit;
-  const contacts = await Contacts.find({user},'',{skip, limit: +limit});
-  return res.json(contacts);
+  
+  if (favorite) {
+    const parsedFavorite = JSON.parse(favorite)
+    const contactsFavorite = await Contacts.find({ owner: _id, favorite: parsedFavorite }, '', { skip, limit: +limit });
+    const total = contactsFavorite.length;
+    return res.json({ total, data: contactsFavorite })
+  }
+
+  const contacts = await Contacts.find({ owner: _id }, '', { skip, limit: +limit });
+  const total = contacts.length;
+  return res.json({ total, data: contacts });
 };
 
 const getContactById = async (req, res, next) => {
@@ -63,9 +72,8 @@ const updateStatusContact = async (req, res, next) => {
     return next(BadRequestHttp(error.message))
   }
   const { contactId } = req.params;
-  const favorite = req.body;
   const { _id } = req.user;
-  const updatedStatus = await Contacts.findByIdAndUpdate({ _id: contactId, owner: _id }, favorite, { new: true })
+  const updatedStatus = await Contacts.findByIdAndUpdate({ _id: contactId, owner: _id }, req.body, { new: true });
   
     if (!updatedStatus) {
       return next(NotFoundHttpError())
