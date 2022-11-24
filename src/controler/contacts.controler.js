@@ -1,6 +1,5 @@
 const { Contacts } = require('../models/model.contact')
-const { schemePost, schemePatch, schemePut} = require('../schema/validationsContacts')
-const {NotFoundHttpError, BadRequestHttp} = require("../helper/helper");
+const {NotFoundHttpError} = require("../helper/helper");
 
 const listContacts = async (req, res, next) => {
   const { _id } = req.user;
@@ -40,23 +39,14 @@ const removeContact = async (req, res, next) => {
 };
 
 const addContact = async (req, res, next) => {
-  const { error } = schemePost.validate(req.body);
-  if (error) {
-    return next(BadRequestHttp(error.message))
-  }
   const { _id } = req.user;
   const newContact = await Contacts.create({...req.body, owner: _id});
   return res.status(201).json(newContact)
 };
 
 const updateContact = async (req, res, next) => {
-  const { error } = schemePut.validate(req.body);
   const { contactId } = req.params;
   const { _id } = req.user;
-
-  if (error) {
-    return next(BadRequestHttp(error.message))
-  }
 
   const updatedContact = await Contacts.findByIdAndUpdate( {_id: contactId, owner: _id },req.body,{ new: true })
   
@@ -67,10 +57,6 @@ const updateContact = async (req, res, next) => {
 };
 
 const updateStatusContact = async (req, res, next) => { 
-  const { error } = schemePatch.validate(req.body);
-  if (error) {
-    return next(BadRequestHttp(error.message))
-  }
   const { contactId } = req.params;
   const { _id } = req.user;
   const updatedStatus = await Contacts.findByIdAndUpdate({ _id: contactId, owner: _id }, req.body, { new: true });
