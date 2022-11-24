@@ -10,11 +10,16 @@ const { schemePostRegister, schemeGetLogin, schemePatchSub } = require("../../sc
 
 const authRouter = express.Router();
 
-authRouter.post("/register",validationSchema(schemePostRegister), tryCatchWrapper(register));
+authRouter.post("/register", validationSchema(schemePostRegister), tryCatchWrapper(register));
+
 authRouter.post("/login", validationSchema(schemeGetLogin), tryCatchWrapper(login));
+
 authRouter.get("/current", auth, tryCatchWrapper(getCurrent));
+
 authRouter.post("/logout", auth, tryCatchWrapper(logout));
-authRouter.patch("/",validationSchema(schemePatchSub), auth, tryCatchWrapper(setSubcription));
+
+authRouter.patch("/", validationSchema(schemePatchSub), auth, tryCatchWrapper(setSubcription));
+
 authRouter.patch("/avatars", uploadImg.single("avatar"), auth, tryCatchWrapper(updateAvatar));
 
 
