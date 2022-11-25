@@ -18,9 +18,9 @@ authRouter.get("/current", auth, tryCatchWrapper(getCurrent));
 
 authRouter.post("/logout", auth, tryCatchWrapper(logout));
 
-authRouter.patch("/", validationSchema(schemePatchSub), auth, tryCatchWrapper(setSubcription));
+authRouter.patch("/", auth,validationSchema(schemePatchSub), tryCatchWrapper(setSubcription));
 
-authRouter.patch("/avatars", uploadImg.single("avatar"), auth, tryCatchWrapper(updateAvatar));
+authRouter.patch("/avatars", auth, uploadImg.single("avatar"),  tryCatchWrapper(updateAvatar));
 
 
 module.exports = authRouter
