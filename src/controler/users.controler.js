@@ -7,6 +7,7 @@ const { Unauthorized, BadRequest } = require('http-errors');
 const { User } = require('../models/model.user');
 const config = require('../config/config');
 const path = require('path');
+const { PORT } = require('../config/config');
 
 const register = async (req, res, next) => {
   const { email, password } = req.body;
@@ -84,13 +85,13 @@ const updateAvatar = async (req, res, next) => {
   const resultUpload = path.join(publicPath, _id + originalname);
     await fs.rename(tmpPath, resultUpload);
 
-  const resizeImage = await Jimp.read(resultUpload);
+    const resizeImage = await Jimp.read(resultUpload);
   resizeImage.resize(250, 250).write(resultUpload)
   const avatarURL = path.join("avatars", _id + originalname);
-   console.log(avatarURL)
   const newAvatar = await User.findByIdAndUpdate(_id, { avatarURL }, { new: true})
   return res.status(200).json({
-    avatarURL: newAvatar.avatarURL
+    // avatarURL: `http://localhost:${PORT}/${newAvatar.avatarURL.split("\\").join("/")}`
+    avatarURL: "/" + newAvatar.avatarURL.split("\\").join("/")
   });
 }
 
