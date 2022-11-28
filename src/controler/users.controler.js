@@ -1,19 +1,18 @@
 const jwt = require('jsonwebtoken')
 const bcrypt = require('bcryptjs');
-const {Conflict, Unauthorized, BadRequest} = require('http-errors')
-const { User } = require('../models/model.user')
-const config = require('../config/config')
-const { schemePostRegister, schemeGetLogin, schemePatchSub } = require('../schema/validationUser');
-
+const gravatar = require('gravatar');
+const fs = require('fs/promises');
+const Jimp = require('jimp');
+const { Unauthorized, BadRequest } = require('http-errors');
+const { User } = require('../models/model.user');
+const config = require('../config/config');
+const path = require('path');
+const { PORT } = require('../config/config');
 
 const register = async (req, res, next) => {
-  const { error } = schemePostRegister.validate(req.body);
-  if (error) {
-     throw new Conflict("Email in use")
-  }
-
   const { email, password } = req.body;
-  const user = await User.create({ email, password });
+  const avatarURL = gravatar.url(email, {protocol: "https"})
+  const user = await User.create({ email, password, avatarURL });
   return res.status(201).json({
     user: {
       email: user.email,
@@ -23,10 +22,6 @@ const register = async (req, res, next) => {
 };
 
 const login = async (req, res, next) => {
-  const { error } =  schemeGetLogin.validate(req.body);
-  if (error) {
-    throw new BadRequest(error.message)
-  }
   const { email, password } = req.body;
   const user = await User.findOne({ email })
   if (!user) {
@@ -65,16 +60,11 @@ const logout = async (req, res, next) => {
   res.status(204).json()
 };
 
-const setSubcrition = async (req, res, next) => {
-  const { error } =  schemePatchSub.validate(req.body);
+const setSubcription = async (req, res, next) => {
   const { _id } = req.user;
   const { subscription }  = req.body;
-  if (error) {
-   throw new BadRequest(error.message)
-  }
   const find = await User.findOne(_id);
-  console.log(find.subscription)
-  console.log(subscription)
+  
   if (subscription === find.subscription) {
     throw new BadRequest("You have this subscrition alredy");
   }
@@ -85,11 +75,32 @@ const setSubcrition = async (req, res, next) => {
   });
 };
 
+const updateAvatar = async (req, res, next) => {
+  if (!req.file) {
+    throw new BadRequest("Wrong file type. Only .jpeg, .jpg or .png are allowed.");
+  }
+  const { path: tmpPath, originalname } = req.file
+  const { _id } = req.user;
+  const publicPath = path.join(process.cwd(), "public/avatars");
+  const resultUpload = path.join(publicPath, _id + originalname);
+    await fs.rename(tmpPath, resultUpload);
+
+    const resizeImage = await Jimp.read(resultUpload);
+  resizeImage.resize(250, 250).write(resultUpload)
+  const avatarURL = path.join("avatars", _id + originalname);
+  const newAvatar = await User.findByIdAndUpdate(_id, { avatarURL }, { new: true})
+  return res.status(200).json({
+    // avatarURL: `http://localhost:${PORT}/${newAvatar.avatarURL.split("\\").join("/")}`
+    avatarURL: "/" + newAvatar.avatarURL.split("\\").join("/")
+  });
+}
+
 
 module.exports = {
   register, 
   login,
   getCurrent,
   logout,
-  setSubcrition
+  setSubcription,
+  updateAvatar
 };

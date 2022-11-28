@@ -27,9 +27,10 @@ function Unauthorized(message) {
     return err
 }
 
+
 module.exports = {
     tryCatchWrapper,
     NotFoundHttpError,
     BadRequestHttp, 
-    Unauthorized
+    Unauthorized,
 }

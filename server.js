@@ -1,6 +1,6 @@
 const app = require("./app");
-const { connectMongo } = require("./db/dbConection")
-const config = require('./config/config')
+const { connectMongo } = require("./src/db/dbConection")
+const config = require('./src/config/config')
 
 async function main() {
   try {
