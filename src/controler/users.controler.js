@@ -90,8 +90,7 @@ const updateAvatar = async (req, res, next) => {
   const avatarURL = path.join("avatars", _id + originalname);
   const newAvatar = await User.findByIdAndUpdate(_id, { avatarURL }, { new: true})
   return res.status(200).json({
-    // avatarURL: `http://localhost:${PORT}/${newAvatar.avatarURL.split("\\").join("/")}`
-    avatarURL: "/" + newAvatar.avatarURL.split("\\").join("/")
+    avatarURL: `http://localhost:${PORT}/${newAvatar.avatarURL.split("\\").join("/")}`
   });
 }
 
