@@ -15,6 +15,9 @@ const schemePatchSub = Joi.object({
    subscription: Joi.string().required().valid("starter", "pro", "business"),
 })
 
+const schemePostVerify = Joi.object({
+   email: Joi.string().required().email({ minDomainSegments: 2, tlds: { allow: ["com", "net"] } })
+})
 
-module.exports = { schemePostRegister, schemeGetLogin, schemePatchSub};
+module.exports = { schemePostRegister, schemeGetLogin, schemePatchSub, schemePostVerify};
 
