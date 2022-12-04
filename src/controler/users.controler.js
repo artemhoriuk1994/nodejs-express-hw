@@ -3,22 +3,31 @@ const bcrypt = require('bcryptjs');
 const gravatar = require('gravatar');
 const fs = require('fs/promises');
 const Jimp = require('jimp');
-const { Unauthorized, BadRequest } = require('http-errors');
+const { v4: uuidv4 }  = require('uuid')
+const { Unauthorized, BadRequest, NotFound } = require('http-errors');
 const { User } = require('../models/model.user');
 const config = require('../config/config');
 const path = require('path');
-const { PORT } = require('../config/config');
+const { PORT} = require('../config/config');
+const { verifyEmail } = require('../middlewares/verification');
 
 const register = async (req, res, next) => {
   const { email, password } = req.body;
-  const avatarURL = gravatar.url(email, {protocol: "https"})
-  const user = await User.create({ email, password, avatarURL });
+  const findEmail = await User.findOne({ email });
+  if (findEmail) {
+    throw new BadRequest("Alredy registred");
+  }
+
+  const avatarURL = gravatar.url(email, { protocol: "https" });
+  const verificationToken = uuidv4();
+  const user = await User.create({ email, password, avatarURL , verificationToken});
+  await verifyEmail(email, verificationToken);
   return res.status(201).json({
     user: {
       email: user.email,
       subscription: user.subscription
     }
-  })
+  });
 };
 
 const login = async (req, res, next) => {
@@ -26,6 +35,9 @@ const login = async (req, res, next) => {
   const user = await User.findOne({ email })
   if (!user) {
     throw new Unauthorized("Email or password is wrong!")
+  }
+  if (!user.verify) {
+    throw new Unauthorized("Please verify your email")
   }
   const isPasswordTrue = await bcrypt.compare(password, user.password);
   if (!isPasswordTrue) {
@@ -83,18 +95,48 @@ const updateAvatar = async (req, res, next) => {
   const { _id } = req.user;
   const publicPath = path.join(process.cwd(), "public/avatars");
   const resultUpload = path.join(publicPath, _id + originalname);
-    await fs.rename(tmpPath, resultUpload);
+  await fs.rename(tmpPath, resultUpload);
 
     const resizeImage = await Jimp.read(resultUpload);
   resizeImage.resize(250, 250).write(resultUpload)
   const avatarURL = path.join("avatars", _id + originalname);
-  const newAvatar = await User.findByIdAndUpdate(_id, { avatarURL }, { new: true})
+  const newAvatar = await User.findByIdAndUpdate(_id, { avatarURL }, { new: true })
   return res.status(200).json({
-    // avatarURL: `http://localhost:${PORT}/${newAvatar.avatarURL.split("\\").join("/")}`
-    avatarURL: "/" + newAvatar.avatarURL.split("\\").join("/")
+    avatarURL: `http://localhost:${PORT}/${newAvatar.avatarURL.split("\\").join("/")}`
   });
-}
+};
 
+const verifycationRequest = async (req, res, next) => {
+  const { verificationToken } = req.params
+  const verifiedUser = await User.findOne({ verificationToken });
+  if (verifiedUser && !verifiedUser.verify) {
+    await User.findByIdAndUpdate(verifiedUser._id, {
+      verify: true,
+      verificationToken: null
+    })
+    return res.status(200).json({
+      message: 'Verification successful'
+    })
+  };
+  throw new NotFound('Not Found')
+};
+
+const resendVerify = async (req, res, next) => {
+  const { email } = req.body;
+  const user = await User.findOne({ email });
+  if (!user) {
+    throw new NotFound("Not Found");
+  }
+  if (user.verify) {
+    throw new BadRequest("Verification has already been passed");
+  }
+  await verifyEmail(email, user.verificationToken);
+  
+   return res.status(200).json({
+      message: 'Verification email sent'
+  })
+}
+ 
 
 module.exports = {
   register, 
@@ -102,5 +144,7 @@ module.exports = {
   getCurrent,
   logout,
   setSubcription,
-  updateAvatar
+  updateAvatar, 
+  verifycationRequest,
+  resendVerify
 };
